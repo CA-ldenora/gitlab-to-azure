@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitLab to Azure DevOps Converter</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>GitLab to Azure DevOps Converter</h1>
+
+    <!-- Upload Button -->
+    <input type="file" id="upload-csv" accept=".csv">
+
+    <!-- Drag and Drop Area -->
+    <div id="drag-drop-area" class="drag-drop-area" onclick="document.getElementById('upload-csv').click()">
+      <div id="file-info" class="file-info">
+        Drag & Drop your CSV file here or Click
+      </div>
+    </div>
+    
+    <!-- Error Banner -->
+    <div id="error-banner" class="error-banner"></div>
+
+    <!-- Default Settings Button -->
+    <button id="default-settings-btn" class="default-settings-btn">Settings</button>
+<br>
+    <!-- Download Link -->
+      <a id="download-url">
+       ⬇️ Download Converted File
+      </a>
+
+    <!-- Modal for Default Settings -->
+    <div id="default-settings-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" id="close-modal-btn">&times;</span>
+        <h2>Default Settings</h2>
+        <div class="user-input-container">
+          <label for="user-area-path-input">Default Area Path:</label>
+          <input type="text" id="user-area-path-input"/>
+        </div>
+        <div class="user-input-container">
+          <label for="user-iteration-path-input">Default Iteration Path:</label>
+          <input type="text" id="user-iteration-path-input"/>
+        </div>
+        <div class="user-input-container">
+          <label for="user-tags-input">Default Tags:</label>
+          <input type="text" id="user-tags-input" value="" placeholder="Enter default tags" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div id="preview-content" class="preview-content">No data to preview.</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+    </script>
+  <div class="version-info">Version 1.0.0</div>
+
+</body>
+</html>
