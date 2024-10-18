@@ -144,29 +144,27 @@ document.addEventListener("DOMContentLoaded", function () {
     userTagsInput,
     marked
   ) {
+    // Tip: Avoid conditionally adding columns. 
     // Determine if the work item is a bug based on the title
     const title = gitlabRow["Title"] || "Untitled";
     const isBug = title.toLowerCase().includes("bug");
-
     // Map required fields
     azureRow["ID"] = gitlabRow["ID"] || "";
     azureRow["Work Item Type"] = isBug ? "Bug" : "Task";
     azureRow["Title"] = title;
     azureRow["Area Path"] = gitlabRow["Area Path"] || userAreaPathInput;
     azureRow["Iteration Path"] = gitlabRow["Iteration Path"] || userIterationPathInput;
-    azureRow["Tags"] = gitlabRow["Tags"] || userTagsInput;
-
+    azureRow["Tags"] = gitlabRow["Labels"]?.split(',').filter(r => !r.match(/priority:(\d+)/)) || userTagsInput;
+    const priorityMatch = gitlabRow["Labels"]?.match(/priority:(\d+)/);
+    azureRow["Priority"] = priorityMatch ? +priorityMatch[1] + 1 : '';
     // Create a formatted description including the URL and Description
     const url = gitlabRow["URL"] || "";
     const descriptionContent = gitlabRow["Description"] || "";
     const description = `${url}\n${marked.parse(descriptionContent)}`;
-
     // Map the description to the appropriate field for Bug or Task
-    if (isBug) {
-      azureRow["Repro Steps"] = description;
-    } else {
-      azureRow["Description"] = description;
-    }
+    azureRow["Repro Steps"] = isBug ? description : '';
+    azureRow["Description"] = !isBug ? description : '';
+
   }
 
   function previewConvertedData(previewData) {
