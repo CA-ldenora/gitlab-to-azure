@@ -22,7 +22,7 @@ The **GitLab to Azure DevOps Converter** is a tool designed to simplify the migr
    ```
 2. Navigate to the project directory:
    ```bash
-   cd gitlab-to-azure-devops
+   cd gitlab-to-azure
    ```
 3. Open `index.html` in your browser (consider using a local server, e.g., Python's SimpleHTTPServer, to avoid CORS issues).
 
