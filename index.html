@@ -1,64 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GitLab to Azure DevOps Converter</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="index.js"></script>
+  <script type="module">
+    (async ({ chrome, netscape }) => {
+
+      // add Safari polyfill if needed
+      if (!chrome && !netscape)
+        await import('https://unpkg.com/@ungap/custom-elements');
+
+      const { default: HighlightedCode } =
+        await import('https://unpkg.com/highlighted-code');
+
+      // bootstrap a theme through one of these names
+      // https://github.com/highlightjs/highlight.js/tree/main/src/styles
+      HighlightedCode.useTheme('github-dark');
+    })(self);
+  </script>
 </head>
+
 <body>
   <div class="container">
     <h1>GitLab to Azure DevOps Converter</h1>
-
-    <!-- Upload Button -->
-    <input type="file" id="upload-csv" accept=".csv">
-
-    <!-- Drag and Drop Area -->
+    <input type="file" id="upload-csv" accept=".csv" aria-label="Upload CSV File">
     <div id="drag-drop-area" class="drag-drop-area" onclick="document.getElementById('upload-csv').click()">
-      <div id="file-info" class="file-info">
-        Drag & Drop your CSV file here or Click
-      </div>
+      <div id="file-info" class="file-info">Drag & Drop your CSV file here or Click</div>
     </div>
-    
-    <!-- Error Banner -->
     <div id="error-banner" class="error-banner"></div>
-
-    <!-- Default Settings Button -->
-    <button id="default-settings-btn" class="default-settings-btn">Settings</button>
-<br>
-    <!-- Download Link -->
-      <a id="download-url">
-       ⬇️ Download Converted File
-      </a>
-
-    <!-- Modal for Default Settings -->
+    <div id="downloaded-banner" class="downloaded-banner"></div>
     <div id="default-settings-modal" class="modal">
       <div class="modal-content">
-        <span class="close-btn" id="close-modal-btn">&times;</span>
-        <h2>Default Settings</h2>
+        <span class="close-btn" id="close-modal-btn" aria-label="Close Modal">&times;</span>
+        <h2>Mapping Settings</h2>
         <div class="user-input-container">
           <label for="user-area-path-input">Default Area Path:</label>
-          <input type="text" id="user-area-path-input"/>
+          <input type="text" id="user-area-path-input" placeholder="Enter area path">
         </div>
         <div class="user-input-container">
           <label for="user-iteration-path-input">Default Iteration Path:</label>
-          <input type="text" id="user-iteration-path-input"/>
+          <input type="text" id="user-iteration-path-input" placeholder="Enter Iteration path">
         </div>
         <div class="user-input-container">
           <label for="user-tags-input">Default Tags:</label>
-          <input type="text" id="user-tags-input" value="" placeholder="Enter default tags" />
+          <input type="text" id="user-tags-input" placeholder="Enter default tags">
+        </div>
+        <div class="user-input-container">
+          <label for="custom-mapping">Complex Mapping:</label>
+          <textarea is="highlighted-code" cols="80" rows="12" language="javascript" spellcheck="false"
+            id="custom-mapping" tab-size="2" auto-height value=""></textarea>
         </div>
       </div>
     </div>
-
-    <!-- Preview Section -->
     <div id="preview-content" class="preview-content">No data to preview.</div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script>
-    </script>
-  <div class="version-info">Version 1.0.0</div>
-
+    <div class="actions-container">
+      <a id="download-url">
+        <button id="download-button" disabled aria-label="Download Converted File">
+          <svg fill="currentColor" width="24px" height="24px" viewBox="0 0 1024 1024"
+            xmlns="http://www.w3.org/2000/svg">
+            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+            <g id="SVGRepo_iconCarrier">
+              <path
+                d="M512 666.5L367.2 521.7l36.2-36.2 83 83V256h51.2v312.5l83-83 36.2 36.2L512 666.5zm-204.8 50.3V768h409.6v-51.2H307.2z">
+              </path>
+            </g>
+          </svg>Download Converted File
+        </button>
+      </a>
+      <button id="default-settings-btn" class="default-settings-btn button-light" aria-label="Open Default Settings">
+        <svg fill="currentColor" width="14px" height="14px" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg">
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+          <g id="SVGRepo_iconCarrier">
+            <path
+              d="M1703.534 960c0-41.788-3.84-84.48-11.633-127.172l210.184-182.174-199.454-340.856-265.186 88.433c-66.974-55.567-143.323-99.389-223.85-128.415L1158.932 0h-397.78L706.49 269.704c-81.43 29.138-156.423 72.282-223.962 128.414l-265.073-88.32L18 650.654l210.184 182.174C220.39 875.52 216.55 918.212 216.55 960s3.84 84.48 11.633 127.172L18 1269.346l199.454 340.856 265.186-88.433c66.974 55.567 143.322 99.389 223.85 128.415L761.152 1920h397.779l54.663-269.704c81.318-29.138 156.424-72.282 223.963-128.414l265.073 88.433 199.454-340.856-210.184-182.174c7.793-42.805 11.633-85.497 11.633-127.285m-743.492 395.294c-217.976 0-395.294-177.318-395.294-395.294 0-217.976 177.318-395.294 395.294-395.294 217.977 0 395.294 177.318 395.294 395.294 0 217.976-177.317 395.294-395.294 395.294"
+              fill-rule="evenodd"></path>
+          </g>
+        </svg>
+        Settings</button>
+    </div>
+    <div class="version-info">Version 1.0.0</div>
+  </div>
 </body>
+
 </html>
