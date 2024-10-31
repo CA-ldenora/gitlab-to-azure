@@ -13,14 +13,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const defaultSettingsModal = document.getElementById(
     "default-settings-modal"
   );
-  const closeModalBtn = document.getElementById("close-modal-btn");
 
   let uploadedCsvData;
   let uploadedFileName;
 
   function handleFileUpload(file) {
     if (file.type !== "text/csv") {
-      alert("Please upload a valid CSV file.");
+      alert("Please upload a valid CSV file."); 
       return;
     }
     dragDropArea.classList.add("dragged");
@@ -283,11 +282,6 @@ document.addEventListener("DOMContentLoaded", function () {
       customFiltersEl.style.height = "150px";
       customFiltersEl.value = extractFunctionBody(filterDefaultFn);
     }, 1500);
-  });
-
-  closeModalBtn.addEventListener("click", function () {
-    defaultSettingsModal.style.display = "none";
-    createDownloadLinkAndPreview();
   });
 
   function extractFunctionBody(fn) {
