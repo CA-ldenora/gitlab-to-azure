@@ -6,7 +6,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const fileInfo = document.getElementById("file-info");
   const previewContent = document.getElementById("preview-content");
   const errorBanner = document.getElementById("error-banner");
+  const infoBanner = document.getElementById("info-banner");
   const customMappingEl = document.getElementById("custom-mapping");
+  const customFiltersEl = document.getElementById("custom-filters");
   const defaultSettingsBtn = document.getElementById("default-settings-btn");
   const defaultSettingsModal = document.getElementById(
     "default-settings-modal"
@@ -79,6 +81,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 5000);
   }
 
+  function displayInfo(infos) {
+    let infoMessages = "";
+    infos.forEach((info, index) => {
+      infoMessages += `Info: ${index + 1}: ${info.message}<br>`;
+    });
+    console.info(infoMessages);
+    infoBanner.innerHTML = infoMessages;
+    infoBanner.style.display = "block";
+    setTimeout(() => {
+      infoBanner.innerHTML = "";
+      infoBanner.style.display = "none";
+    }, 5000);
+  }
+
   function createDownloadLinkAndPreview() {
     const convertedData = convertData(uploadedCsvData);
 
@@ -101,13 +117,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     previewConvertedData(convertedData);
   }
-  /**
-   * @default mappingDefaultFn
-   */
-  function getCustomMapping() {
-    return createFunctionFromBody(
-      document.getElementById("custom-mapping").value
-    );
+
+  function getCustomEntry(
+    entry = "custom-mapping",
+    args = [
+      "gitlabRow",
+      "azureRow",
+      "userAreaPathInput",
+      "userIterationPathInput",
+      "userTagsInput",
+      "marked",
+    ]
+  ) {
+    return createFunctionFromBody(document.getElementById(entry).value, args);
   }
 
   function convertData(data) {
@@ -117,25 +139,64 @@ document.addEventListener("DOMContentLoaded", function () {
     const userIterationPathInput = document.getElementById(
       "user-iteration-path-input"
     ).value;
+    const userLabelsInput = document.getElementById(
+      "user-labels-filters-input"
+    ).value;
     const userTagsInput = document.getElementById("user-tags-input").value;
 
-    return data.map((gitlabRow) => {
-      const azureRow = {};
-      if (document.getElementById("custom-mapping").value) {
-        mappingDefaultFn = getCustomMapping();
+    const retVal = data
+      .filter((gitlabRow) => {
+        let retVal = true;
+        if (document.getElementById("custom-filters").value) {
+          filterDefaultFn = getCustomEntry("custom-filters", [
+            "gitlabRow",
+            "retVal",
+            "userPriorityInput",
+            "marked",
+          ]);
+        }
+        if (userLabelsInput) {
+          retVal = filterDefaultFn(
+            gitlabRow,
+            retVal,
+            userLabelsInput,
+            marked
+          );
+        }
+
+        return retVal;
+      })
+      .map((gitlabRow) => {
+        const azureRow = {};
+        if (document.getElementById("custom-mapping").value) {
+          mappingDefaultFn = getCustomEntry("custom-mapping");
+        }
+        mappingDefaultFn(
+          gitlabRow,
+          azureRow,
+          userAreaPathInput,
+          userIterationPathInput,
+          userTagsInput,
+          marked
+        );
+        return azureRow;
+      });
+    displayInfo([
+      {
+        message: `filtered: ${
+          retVal.length
+        } rows`,
+      },{
+        message: 'priority migrate to azure priority +1'
       }
-      mappingDefaultFn(
-        gitlabRow,
-        azureRow,
-        userAreaPathInput,
-        userIterationPathInput,
-        userTagsInput,
-        marked
-      );
-      return azureRow;
+    ]);
+    return retVal;
+  }
+  function filterDefaultFn(gitlabRow, userPriorityInput, marked) {
+    return userPriorityInput.split(",").some((priority) => {
+      return gitlabRow["Labels"]?.includes(priority);
     });
   }
-
   function mappingDefaultFn(
     gitlabRow,
     azureRow,
@@ -144,7 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
     userTagsInput,
     marked
   ) {
-    // Tip: Avoid conditionally adding columns. 
+    // Tip: Avoid conditionally adding columns.
     // Determine if the work item is a bug based on the title
     const title = gitlabRow["Title"] || "Untitled";
     const isBug = title.toLowerCase().includes("bug");
@@ -153,18 +214,21 @@ document.addEventListener("DOMContentLoaded", function () {
     azureRow["Work Item Type"] = isBug ? "Bug" : "Task";
     azureRow["Title"] = title;
     azureRow["Area Path"] = gitlabRow["Area Path"] || userAreaPathInput;
-    azureRow["Iteration Path"] = gitlabRow["Iteration Path"] || userIterationPathInput;
-    azureRow["Tags"] = gitlabRow["Labels"]?.split(',').filter(r => !r.match(/priority:(\d+)/)) || userTagsInput;
+    azureRow["Iteration Path"] =
+      gitlabRow["Iteration Path"] || userIterationPathInput;
+    azureRow["Tags"] =
+      gitlabRow["Labels"]
+        ?.split(",")
+        .filter((r) => !r.match(/priority:(\d+)/)) || userTagsInput;
     const priorityMatch = gitlabRow["Labels"]?.match(/priority:(\d+)/);
-    azureRow["Priority"] = priorityMatch ? +priorityMatch[1] + 1 : '';
+    azureRow["Priority"] = priorityMatch ? +priorityMatch[1] + 1 : "";
     // Create a formatted description including the URL and Description
     const url = gitlabRow["URL"] || "";
     const descriptionContent = gitlabRow["Description"] || "";
     const description = `${url}\n${marked.parse(descriptionContent)}`;
     // Map the description to the appropriate field for Bug or Task
-    azureRow["Repro Steps"] = isBug ? description : '';
-    azureRow["Description"] = !isBug ? description : '';
-
+    azureRow["Repro Steps"] = isBug ? description : "";
+    azureRow["Description"] = !isBug ? description : "";
   }
 
   function previewConvertedData(previewData) {
@@ -212,10 +276,13 @@ document.addEventListener("DOMContentLoaded", function () {
     e.stopPropagation();
     defaultSettingsModal.style.display = "flex";
     customMappingEl.style.height = "0px";
+    customFiltersEl.style.height = "0px";
     setTimeout(() => {
       customMappingEl.style.height = "323px";
       customMappingEl.value = extractFunctionBody(mappingDefaultFn);
-    }, 1000);
+      customFiltersEl.style.height = "150px";
+      customFiltersEl.value = extractFunctionBody(filterDefaultFn);
+    }, 1500);
   });
 
   closeModalBtn.addEventListener("click", function () {
@@ -228,17 +295,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const bodyMatch = fnString.match(/{([\s\S]*)}/);
     return bodyMatch ? bodyMatch[1] : "";
   }
-
-  function createFunctionFromBody(functionContent) {
-    return new Function(
-      "gitlabRow",
-      "azureRow",
-      "userAreaPathInput",
-      "userIterationPathInput",
-      "userTagsInput",
-      "marked",
-      functionContent
-    );
+  /**
+   * @param {string} functionContent
+   * @param {string[]} args
+   * @returns {Function}
+   */
+  function createFunctionFromBody(functionContent, args) {
+    return new Function(...args, functionContent);
   }
   window.addEventListener("click", function (event) {
     if (event.target == defaultSettingsModal) {
