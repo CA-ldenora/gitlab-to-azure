@@ -33,29 +33,46 @@
     <div id="drag-drop-area" class="drag-drop-area" onclick="document.getElementById('upload-csv').click()">
       <div id="file-info" class="file-info">Drag & Drop your CSV file here or Click</div>
     </div>
-    <div id="error-banner" class="error-banner"></div>
+    <div id="error-banner" class="banner error-banner"></div>
+    <div id="info-banner" class="banner info-banner"></div>
     <div id="downloaded-banner" class="downloaded-banner"></div>
     <div id="default-settings-modal" class="modal">
       <div class="modal-content">
-        <span class="close-btn" id="close-modal-btn" aria-label="Close Modal">&times;</span>
-        <h2>Mapping Settings</h2>
-        <div class="user-input-container">
-          <label for="user-area-path-input">Default Area Path:</label>
-          <input type="text" id="user-area-path-input" placeholder="Enter area path">
-        </div>
-        <div class="user-input-container">
-          <label for="user-iteration-path-input">Default Iteration Path:</label>
-          <input type="text" id="user-iteration-path-input" placeholder="Enter Iteration path">
-        </div>
-        <div class="user-input-container">
-          <label for="user-tags-input">Default Tags:</label>
-          <input type="text" id="user-tags-input" placeholder="Enter default tags">
-        </div>
-        <div class="user-input-container">
-          <label for="custom-mapping">Complex Mapping:</label>
-          <textarea is="highlighted-code" cols="80" rows="12" language="javascript" spellcheck="false"
-            id="custom-mapping" tab-size="2" auto-height value=""></textarea>
-        </div>
+        <section style="flex: 1">
+
+          <h2>Filter Settings</h2>
+          <div class="user-input-container">
+            <label for="custom-filters">Complex Filters:</label>
+            <textarea is="highlighted-code" cols="40" language="javascript" spellcheck="false" id="custom-filters"
+              tab-size="2" auto-height value=""></textarea>
+            <div class="user-input-container">
+              <label for="user-labels-filters-input">Filter by labels:</label>
+              <input type="text" id="user-labels-filters-input"
+                placeholder="es: 0,1,2 for priority label or approved label">
+            </div>
+          </div>
+        </section>
+        <section style="flex: 1">
+
+          <h2>Mapping Settings</h2>
+          <div class="user-input-container">
+            <label for="user-area-path-input">Default Area Path:</label>
+            <input type="text" id="user-area-path-input" placeholder="Enter area path">
+          </div>
+          <div class="user-input-container">
+            <label for="user-iteration-path-input">Default Iteration Path:</label>
+            <input type="text" id="user-iteration-path-input" placeholder="Enter Iteration path">
+          </div>
+          <div class="user-input-container">
+            <label for="user-tags-input">Default Tags:</label>
+            <input type="text" id="user-tags-input" placeholder="Enter default tags">
+          </div>
+          <div class="user-input-container">
+            <label for="custom-mapping">Complex Mapping:</label>
+            <textarea is="highlighted-code" cols="80" language="javascript" spellcheck="false" id="custom-mapping"
+              tab-size="2" auto-height value=""></textarea>
+          </div>
+        </section>
       </div>
     </div>
     <div id="preview-content" class="preview-content">No data to preview.</div>
