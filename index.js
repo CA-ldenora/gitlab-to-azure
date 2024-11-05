@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //#endregion
 
-    const descriptionContent = gitlabRow["Description"] || "";
+    let descriptionContent = gitlabRow["Description"] || "";
 
     //#region Effort Calculation
     let timeEstimate = Math.floor(
@@ -215,7 +215,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //#endregion
 
     //#region image extraction
-    descriptionContent = embedImagesInMarkdown(
+    descriptionContent = await embedImagesInMarkdown(
       descriptionContent,
       url.replace(/\/-\/issues\/\d+/, "")
     );
