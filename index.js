@@ -207,6 +207,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //#region Basic Field Mapping
     azureRow["ID"] = gitlabRow["Issue ID"] || "";
     azureRow["Note"] = "";
+    const url = gitlabRow["URL"] || "";
     //#endregion
 
     //#region Title and Work Item Type
@@ -221,7 +222,8 @@ document.addEventListener("DOMContentLoaded", function () {
     azureRow["Tags"] =
       gitlabRow["Labels"]
         ?.split(",")
-        .filter((r) => !r.match(/priority:(\d+)/)) || userTagsInput;
+        .filter((r) => !r.match(/priority:(\d+)/))
+        .join(";") || userTagsInput;
 
     const priorityMatch = gitlabRow["Labels"]?.match(/priority:(\d+)/);
     azureRow["Priority"] = priorityMatch ? +priorityMatch[1] + 1 : "";
@@ -229,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //#region Status
     const statusMatch = gitlabRow["Labels"]?.match(/status:(\d+)/);
-    azureRow["Priority"] = statusMatch ? statusMatch[1] : "";
+    azureRow["Status"] = statusMatch ? statusMatch[1] : "status";
     //#endregion
 
     const descriptionContent = gitlabRow["Description"] || "";
@@ -244,15 +246,23 @@ document.addEventListener("DOMContentLoaded", function () {
         "$1"
       );
     }
-    
-    azureRow["Effort"] = timeEstimate ?? "";
+
+    azureRow["Effort"] = timeEstimate ?? "0";
+    //#endregion
+
+    //#region image extraction
+    embedImagesInMarkdown(
+      descriptionContent,
+      url.replace(/\/-\/issues\/\d+/, "")
+    );
     //#endregion
 
     //#region Description Formatting
-    const url = gitlabRow["URL"] || "";
-    const description = marked
-      .parse(`[#{${azureRow["ID"]}}](${url})\n${descriptionContent}`)
-      .replace(",", "&#44;");
+
+    const description =
+      marked
+        .parse(`[#{${azureRow["ID"]}}](${url})\n${descriptionContent}`)
+        .replace(",", "&#44;") ?? "no descr";
 
     azureRow["Repro Steps"] = isBug ? description : "";
     azureRow["Description"] = !isBug ? description : "";
@@ -339,3 +349,57 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+async function embedImagesInMarkdown(markdownContent, baseUrl) {
+  const imageRegex = /!\[image\]\(\/uploads\/\S+\.png\)/g;
+
+  const matches = markdownContent.match(imageRegex) || [];
+
+  const fetchAndConvert = async (match) => {
+    const relativePath = match.match(/\(\/uploads\/\S+\.png\)/)[0].slice(1, -1);
+    const imageUrl = `${baseUrl}${relativePath}`;
+
+    try {
+      const response = await fetch(imageUrl, { method: "GET" });
+
+      // Verifica la presenza dell'intestazione CORS
+      const allowedOrigin = response.headers.get("Access-Control-Allow-Origin");
+      if (
+        !allowedOrigin ||
+        (allowedOrigin !== "*" && allowedOrigin !== window.location.origin)
+      ) {
+        console.error(`Accesso negato per l'immagine: ${imageUrl}`);
+        return match;
+      }
+
+      if (!response.ok) {
+        console.error(`Errore HTTP! Status: ${response.status}`);
+        return match;
+      }
+
+      const blob = await response.blob();
+      const base64String = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+
+      return `![image](${base64String})`;
+    } catch (error) {
+      console.error(
+        `Errore durante il recupero dell'immagine ${imageUrl}:`,
+        error
+      );
+      return match;
+    }
+  };
+
+  const replacements = await Promise.all(matches.map(fetchAndConvert));
+
+  replacements.forEach((replacement, index) => {
+    markdownContent = markdownContent.replace(matches[index], replacement);
+  });
+
+  return markdownContent;
+}
