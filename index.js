@@ -69,7 +69,9 @@ document.addEventListener("DOMContentLoaded", function () {
   function displayErrors(errors) {
     let errorMessages = "";
     errors.forEach((error, index) => {
-      errorMessages += `Error ${index + 1}: ${error.message}, row: ${error.row}`;
+      errorMessages += `Error ${index + 1}: ${error.message}, row: ${
+        error.row
+      }`;
     });
     console.error(errorMessages);
     errorBanner.innerHTML = errorMessages;
@@ -236,8 +238,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //#region Description Formatting
     const url = gitlabRow["URL"] || "";
-    const description = marked.parse(`[#{${azureRow['ID']}}](${url})\n${descriptionContent}`);
-    
+    const description = marked.parse(
+      `[#{${azureRow["ID"]}}](${url})\n${descriptionContent}`
+    );
+
     azureRow["Repro Steps"] = isBug ? description : "";
     azureRow["Description"] = !isBug ? description : "";
     //#endregion
