@@ -1,6 +1,3 @@
-
-const AsyncFunction = async function () {}.constructor;
-
 document.addEventListener("DOMContentLoaded", function () {
   const uploadCsv = document.getElementById("upload-csv");
   const dragDropArea = document.getElementById("drag-drop-area");
@@ -310,7 +307,7 @@ document.addEventListener("DOMContentLoaded", function () {
    * @returns {Function}
    */
   function createFunctionFromBody(functionContent, args) {
-    return new AsyncFunction(...args, functionContent);
+    return new async function () {}.constructor(...args, functionContent);
   }
   window.addEventListener("click", function (event) {
     if (event.target == defaultSettingsModal) {
