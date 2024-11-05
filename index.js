@@ -64,8 +64,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function createDownloadLinkAndPreview() {
-    const convertedData = convertData(uploadedCsvData);
+  async function createDownloadLinkAndPreview() {
+    const convertedData = await convertData(uploadedCsvData);
 
     // Convert the processed data back to CSV
     const csv = Papa.unparse(convertedData);
@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return createFunctionFromBody(document.getElementById(entry).value, args);
   }
 
-  function convertData(data) {
+  async function convertData(data) {
     const userAreaPathInput = document.getElementById(
       "user-area-path-input"
     ).value;
@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
     ).value;
     const userTagsInput = document.getElementById("user-tags-input").value;
 
-    const retVal = data
+    const retVal = await data
       .filter((gitlabRow) => {
         let retVal = true;
         if (document.getElementById("custom-filters").value) {
