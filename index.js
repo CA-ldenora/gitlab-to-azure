@@ -227,20 +227,32 @@ document.addEventListener("DOMContentLoaded", function () {
     azureRow["Priority"] = priorityMatch ? +priorityMatch[1] + 1 : "";
     //#endregion
 
+    //#region Status
+    const statusMatch = gitlabRow["Labels"]?.match(/status:(\d+)/);
+    azureRow["Priority"] = statusMatch ? statusMatch[1] : "";
+    //#endregion
+
     const descriptionContent = gitlabRow["Description"] || "";
 
     //#region Effort Calculation
-    const timeEstimate =
-      Math.floor((gitlabRow["Time Estimate"] / 1000 / 60 / 60) % 24) ??
-      descriptionContent.match(/### Effort\(h\)[\s\S\n\r](\d+)/, "$1");
+    let timeEstimate = Math.floor(
+      (gitlabRow["Time Estimate"] / 1000 / 60 / 60) % 24
+    );
+    if (!timeEstimate) {
+      timeEstimate = descriptionContent.match(
+        /### Effort\(h\)[\s\n\r]+(\d+)/,
+        "$1"
+      );
+    }
+    
     azureRow["Effort"] = timeEstimate ?? "";
     //#endregion
 
     //#region Description Formatting
     const url = gitlabRow["URL"] || "";
-    const description = marked.parse(
-      `[#{${azureRow["ID"]}}](${url})\n${descriptionContent}`
-    );
+    const description = marked
+      .parse(`[#{${azureRow["ID"]}}](${url})\n${descriptionContent}`)
+      .replace(",", "&#44;");
 
     azureRow["Repro Steps"] = isBug ? description : "";
     azureRow["Description"] = !isBug ? description : "";
