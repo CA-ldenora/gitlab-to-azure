@@ -5,8 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const downloadBtn = document.getElementById("download-button");
   const fileInfo = document.getElementById("file-info");
   const previewContent = document.getElementById("preview-content");
-  const errorBanner = document.getElementById("error-banner");
-  const infoBanner = document.getElementById("info-banner");
   const customMappingEl = document.getElementById("custom-mapping");
   const customFiltersEl = document.getElementById("custom-filters");
   const defaultSettingsBtn = document.getElementById("default-settings-btn");
@@ -64,36 +62,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
       header: true,
     });
-  }
-
-  function displayErrors(errors) {
-    let errorMessages = "";
-    errors.forEach((error, index) => {
-      errorMessages += `Error ${index + 1}: ${error.message}, row: ${
-        error.row
-      }`;
-    });
-    console.error(errorMessages);
-    errorBanner.innerHTML = errorMessages;
-    errorBanner.style.display = "block";
-    setTimeout(() => {
-      errorBanner.innerHTML = "";
-      errorBanner.style.display = "none";
-    }, 5000);
-  }
-
-  function displayInfo(infos) {
-    let infoMessages = "";
-    infos.forEach((info, index) => {
-      infoMessages += `Info: ${index + 1}: ${info.message}<br>`;
-    });
-    console.info(infoMessages);
-    infoBanner.innerHTML = infoMessages;
-    infoBanner.style.display = "block";
-    setTimeout(() => {
-      infoBanner.innerHTML = "";
-      infoBanner.style.display = "none";
-    }, 5000);
   }
 
   function createDownloadLinkAndPreview() {
@@ -241,13 +209,14 @@ document.addEventListener("DOMContentLoaded", function () {
       (gitlabRow["Time Estimate"] / 1000 / 60 / 60) % 24
     );
     if (!timeEstimate) {
-      timeEstimate = descriptionContent.match(
-        /### Effort\(h\)[\s\n\r]+(\d+)/,
-        "$1"
-      );
+      // Define the regular expression pattern
+      const regex = /(?:### )?Effort(?:\(h\))?[\s\n\r]+(\d+)/;
+      // Execute the regex on the input string
+      const match = regex.exec(descriptionContent);
+      timeEstimate = match ? match[1] : "0";
     }
 
-    azureRow["Effort"] = timeEstimate ?? "0";
+    azureRow["Effort"] = timeEstimate;
     //#endregion
 
     //#region image extraction
@@ -294,7 +263,9 @@ document.addEventListener("DOMContentLoaded", function () {
         Object.keys(row).forEach((key) => {
           let value = row[key];
           if ((key === "Repro Steps" || key === "Description") && value) {
-            value = value.substring(0, 30) + (value.length > 30 ? "..." : "");
+            value = escapeHtml(
+              value.substring(0, 30) + (value.length > 30 ? "..." : "")
+            );
           }
           previewHtml += `<td>${value || ""}</td>`;
         });
@@ -309,6 +280,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function resetContent() {
+    const errorBanner = document.getElementById("error-banner");
     uploadedCsvData = undefined;
     fileInfo.textContent = "No file uploaded.";
     errorBanner.style.display = "none";
@@ -362,17 +334,17 @@ async function embedImagesInMarkdown(markdownContent, baseUrl) {
     try {
       const response = await fetch(imageUrl, { method: "GET" });
 
-      // Verifica la presenza dell'intestazione CORS
-      const allowedOrigin = response.headers.get("Access-Control-Allow-Origin");
-      if (
-        !allowedOrigin ||
-        (allowedOrigin !== "*" && allowedOrigin !== window.location.origin)
-      ) {
-        console.error(`Accesso negato per l'immagine: ${imageUrl}`);
-        return match;
-      }
-
       if (!response.ok) {
+        const allowedOrigin = response.headers.get(
+          "Access-Control-Allow-Origin"
+        );
+        if (
+          !allowedOrigin ||
+          (allowedOrigin !== "*" && allowedOrigin !== window.location.origin)
+        ) {
+          `Accesso negato per l'immagine: ${imageUrl}`;
+          return match;
+        }
         console.error(`Errore HTTP! Status: ${response.status}`);
         return match;
       }
@@ -402,4 +374,43 @@ async function embedImagesInMarkdown(markdownContent, baseUrl) {
   });
 
   return markdownContent;
+}
+
+function displayErrors(errors) {
+  const errorBanner = document.getElementById("error-banner");
+  let errorMessages = "";
+  errors.forEach((error, index) => {
+    errorMessages += `Error ${index + 1}: ${error.message}, row: ${error.row}`;
+  });
+  console.error(errorMessages);
+  errorBanner.innerHTML = errorMessages;
+  errorBanner.style.display = "block";
+  setTimeout(() => {
+    errorBanner.innerHTML = "";
+    errorBanner.style.display = "none";
+  }, 5000);
+}
+
+function displayInfo(infos) {
+  const infoBanner = document.getElementById("info-banner");
+  let infoMessages = "";
+  infos.forEach((info, index) => {
+    infoMessages += `Info: ${index + 1}: ${info.message}<br>`;
+  });
+  console.info(infoMessages);
+  infoBanner.innerHTML = infoMessages;
+  infoBanner.style.display = "block";
+  setTimeout(() => {
+    infoBanner.innerHTML = "";
+    infoBanner.style.display = "none";
+  }, 5000);
+}
+
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
