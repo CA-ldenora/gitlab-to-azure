@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function createDownloadLinkAndPreview() {
+    previewContent.textContent = "Fetch images...";
     const convertedData = await convertData(uploadedCsvData);
 
     // Convert the processed data back to CSV
@@ -102,6 +103,45 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function convertData(data) {
+    const filterFn = (gitlabRow) => {
+      let retVal = true;
+      if (document.getElementById("custom-filters").value) {
+        filterDefaultFn = getCustomEntry("custom-filters", [
+          "gitlabRow",
+          "retVal",
+          "userPriorityInput",
+          "marked",
+        ]);
+      }
+      if (userLabelsInput) {
+        retVal = filterDefaultFn(gitlabRow, retVal, userLabelsInput, marked);
+      }
+
+      return retVal;
+    };
+    const mapFn = async (gitlabRow) => {
+      const azureRow = {};
+      if (document.getElementById("custom-mapping").value) {
+        mappingDefaultFn = getCustomEntry("custom-mapping");
+      }
+      //#region image extraction
+      if (gitlabRow["URL"])
+        gitlabRow["Description"] = await embedImagesInMarkdown(
+          gitlabRow["Description"],
+          gitlabRow["URL"].replace(/\/-\/issues\/\d+/, "")
+        );
+      //#endregion
+      mappingDefaultFn(
+        gitlabRow,
+        azureRow,
+        userAreaPathInput,
+        userIterationPathInput,
+        userTagsInput,
+        marked
+      );
+
+      return azureRow;
+    };
     const userAreaPathInput = document.getElementById(
       "user-area-path-input"
     ).value;
@@ -113,47 +153,28 @@ document.addEventListener("DOMContentLoaded", function () {
     ).value;
     const userTagsInput = document.getElementById("user-tags-input").value;
 
-    const retVal = await data
-      .filter((gitlabRow) => {
-        let retVal = true;
-        if (document.getElementById("custom-filters").value) {
-          filterDefaultFn = getCustomEntry("custom-filters", [
-            "gitlabRow",
-            "retVal",
-            "userPriorityInput",
-            "marked",
-          ]);
+    const asyncFilterMap = async (array) => {
+      const results = [];
+      for (const element of array) {
+        if (await filterFn(element)) {
+          const mappedValue = await mapFn(element);
+          results.push(mappedValue);
         }
-        if (userLabelsInput) {
-          retVal = filterDefaultFn(gitlabRow, retVal, userLabelsInput, marked);
-        }
+      }
+      return results;
+    };
 
-        return retVal;
-      })
-      .map(async (gitlabRow) => {
-        const azureRow = {};
-        if (document.getElementById("custom-mapping").value) {
-          mappingDefaultFn = getCustomEntry("custom-mapping");
-        }
-        await mappingDefaultFn(
-          gitlabRow,
-          azureRow,
-          userAreaPathInput,
-          userIterationPathInput,
-          userTagsInput,
-          marked
-        );
-        return azureRow;
-      });
+    const filteredAndMapped = await asyncFilterMap(data);
+
     displayInfo([
       {
-        message: `filtered: ${retVal.length} rows`,
+        message: `filtered: ${filteredAndMapped.length} rows`,
       },
       {
         message: "priority migrate to azure priority +1",
       },
     ]);
-    return retVal;
+    return filteredAndMapped;
   }
   function filterDefaultFn(gitlabRow, userPriorityInput) {
     return userPriorityInput.split(",").some((priority) => {
@@ -161,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  async function mappingDefaultFn(
+  function mappingDefaultFn(
     gitlabRow,
     azureRow,
     userAreaPathInput,
@@ -212,13 +233,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     azureRow["Effort"] = timeEstimate;
-    //#endregion
-
-    //#region image extraction
-    descriptionContent = await embedImagesInMarkdown(
-      descriptionContent,
-      url.replace(/\/-\/issues\/\d+/, "")
-    );
     //#endregion
 
     //#region Description Formatting
@@ -307,7 +321,7 @@ document.addEventListener("DOMContentLoaded", function () {
    * @returns {Function}
    */
   function createFunctionFromBody(functionContent, args) {
-    return new async function () {}.constructor(...args, functionContent);
+    return new Function(...args, functionContent);
   }
   window.addEventListener("click", function (event) {
     if (event.target == defaultSettingsModal) {
