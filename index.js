@@ -130,12 +130,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return retVal;
       })
-      .map((gitlabRow) => {
+      .map(async (gitlabRow) => {
         const azureRow = {};
         if (document.getElementById("custom-mapping").value) {
           mappingDefaultFn = getCustomEntry("custom-mapping");
         }
-        mappingDefaultFn(
+        await mappingDefaultFn(
           gitlabRow,
           azureRow,
           userAreaPathInput,
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function mappingDefaultFn(
+  async function mappingDefaultFn(
     gitlabRow,
     azureRow,
     userAreaPathInput,
@@ -173,8 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Determine if the work item is a bug based on the title
 
     //#region Basic Field Mapping
-    azureRow["ID"] = gitlabRow["Issue ID"] || "";
-    azureRow["Note"] = "";
+    azureRow["ID"] = "";
     const url = gitlabRow["URL"] || "";
     //#endregion
 
@@ -186,20 +185,16 @@ document.addEventListener("DOMContentLoaded", function () {
     azureRow["Work Item Type"] = isBug ? "Bug" : "Task";
     //#endregion
 
-    //#region Tags and Priority
-    azureRow["Tags"] =
-      gitlabRow["Labels"]
-        ?.split(",")
-        .filter((r) => !r.match(/priority:(\d+)/))
-        .join(";") || userTagsInput;
+    //#region Status and Priority
+    const statusMatch = gitlabRow["Labels"]?.match(/status:(\d+)/);
+    azureRow["Tags"] = statusMatch ? statusMatch[1] : "status";
 
     const priorityMatch = gitlabRow["Labels"]?.match(/priority:(\d+)/);
     azureRow["Priority"] = priorityMatch ? +priorityMatch[1] + 1 : "";
     //#endregion
 
     //#region Status
-    const statusMatch = gitlabRow["Labels"]?.match(/status:(\d+)/);
-    azureRow["Status"] = statusMatch ? statusMatch[1] : "status";
+
     //#endregion
 
     const descriptionContent = gitlabRow["Description"] || "";
@@ -220,7 +215,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //#endregion
 
     //#region image extraction
-    embedImagesInMarkdown(
+    descriptionContent = embedImagesInMarkdown(
       descriptionContent,
       url.replace(/\/-\/issues\/\d+/, "")
     );
