@@ -168,7 +168,7 @@ h1 {
 .preview-table th,
 .preview-table td {
   padding: 12px;
-  border-bottom: 1px solid #e5e5e5;
+  border: 1px solid #e5e5e5;
 }
 
 .preview-table th {
