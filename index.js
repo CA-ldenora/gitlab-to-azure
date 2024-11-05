@@ -236,7 +236,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //#region Description Formatting
     const url = gitlabRow["URL"] || "";
-    const description = marked.parse(`[#{${azureRow['ID']}}](${url}), descriptionContent`);
+    const description = marked.parse(`[#{${azureRow['ID']}}](${url})\n${descriptionContent}`);
     
     azureRow["Repro Steps"] = isBug ? description : "";
     azureRow["Description"] = !isBug ? description : "";
