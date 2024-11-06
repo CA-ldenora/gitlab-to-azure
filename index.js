@@ -193,6 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //#region Basic Field Mapping
     azureRow["ID"] = "";
+    azureRow["System Info"] = "";
     const url = gitlabRow["URL"] || "";
     //#endregion
 
@@ -206,8 +207,10 @@ document.addEventListener("DOMContentLoaded", function () {
     //#endregion
 
     //#region Status and Priority
+    azureRow["Tags"] = gitlabRow["Labels"]
+
     const statusMatch = gitlabRow["Labels"]?.match(/status:(\w+)/);
-    azureRow["Tags"] = statusMatch ? statusMatch[1] : "";
+    azureRow["State"] = statusMatch ? statusMatch[1].charAt(0).toUppercase()+statusMatch[1].slice(1) : "";
 
     const priorityMatch = gitlabRow["Labels"]?.match(/priority:(\d+)/);
     azureRow["Priority"] = priorityMatch ? +priorityMatch[1] + 1 : "";
