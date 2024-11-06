@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const asyncFilterMap = async (array) => {
       const results = [];
       for (const element of array) {
-        if (await filterFn(element)) {
+        if (filterFn(element)) {
           const mappedValue = await mapFn(element);
           results.push(mappedValue);
         }
@@ -177,6 +177,70 @@ document.addEventListener("DOMContentLoaded", function () {
     return filteredAndMapped;
   }
   function filterDefaultFn(gitlabRow, userPriorityInput) {
+    return [
+      "991",
+      "1150",
+      "1169",
+      "1205",
+      "1290",
+      "1293",
+      "1339",
+      "1372",
+      "876",
+      "1007",
+      "1116",
+      "1118",
+      "1196",
+      "1197",
+      "1241",
+      "1245",
+      "1263",
+      "1275",
+      "1281",
+      "1301",
+      "1316",
+      "1375",
+      "865",
+      "1173",
+      "1233",
+      "1240",
+      "1249",
+      "1253",
+      "1274",
+      "1276",
+      "1282",
+      "1283",
+      "1284",
+      "1299",
+      "1334",
+      "316",
+      "1142",
+      "1143",
+      "1152",
+      "1182",
+      "1219",
+      "1294",
+      "1304",
+      "1056",
+      "1092",
+      "1128",
+      "1151",
+      "1161",
+      "1162",
+      "1170",
+      "1187",
+      "1188",
+      "1215",
+      "1227",
+      "1243",
+      "1247",
+      "1256",
+      "1257",
+      "1285",
+      "1303",
+      "1307",
+      "1373",
+    ].includes(gitlabRow["Issue ID"]);
     return userPriorityInput.split(",").some((priority) => {
       return gitlabRow["Labels"]?.includes(priority);
     });
@@ -239,7 +303,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const description =
       marked
-        .parse(`[#{${azureRow["ID"]}}](${url})\n${descriptionContent}`)
+        .parse(`[#{${azureRow["Issue ID"]}}](${url})\n${descriptionContent}`)
         .replace(",", "&#44;") ?? "no descr";
 
     azureRow["Repro Steps"] = isBug ? description : "";
@@ -337,6 +401,7 @@ async function embedImagesInMarkdown(markdownContent, baseUrl) {
   const matches = markdownContent.match(imageRegex) || [];
 
   const fetchAndConvert = async (match) => {
+    console.log("dowload img");
     const relativePath = match.match(/\(\/uploads\/\S+\.png\)/)[0].slice(1, -1);
     const imageUrl = `${baseUrl}${relativePath}`;
 
