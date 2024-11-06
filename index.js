@@ -113,9 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "marked",
         ]);
       }
-      if (userLabelsInput) {
-        retVal = filterDefaultFn(gitlabRow, retVal, userLabelsInput, marked);
-      }
+      retVal = filterDefaultFn(gitlabRow, retVal, userLabelsInput, marked);
 
       return retVal;
     };
@@ -177,71 +175,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return filteredAndMapped;
   }
   function filterDefaultFn(gitlabRow, userPriorityInput) {
-    return [
-      "991",
-      "1150",
-      "1169",
-      "1205",
-      "1290",
-      "1293",
-      "1339",
-      "1372",
-      "876",
-      "1007",
-      "1116",
-      "1118",
-      "1196",
-      "1197",
-      "1241",
-      "1245",
-      "1263",
-      "1275",
-      "1281",
-      "1301",
-      "1316",
-      "1375",
-      "865",
-      "1173",
-      "1233",
-      "1240",
-      "1249",
-      "1253",
-      "1274",
-      "1276",
-      "1282",
-      "1283",
-      "1284",
-      "1299",
-      "1334",
-      "316",
-      "1142",
-      "1143",
-      "1152",
-      "1182",
-      "1219",
-      "1294",
-      "1304",
-      "1056",
-      "1092",
-      "1128",
-      "1151",
-      "1161",
-      "1162",
-      "1170",
-      "1187",
-      "1188",
-      "1215",
-      "1227",
-      "1243",
-      "1247",
-      "1256",
-      "1257",
-      "1285",
-      "1303",
-      "1307",
-      "1373",
-    ].includes(gitlabRow["Issue ID"]);
-    return userPriorityInput.split(",").some((priority) => {
+    return userPriorityInput?.split(",").some((priority) => {
       return gitlabRow["Labels"]?.includes(priority);
     });
   }
@@ -263,7 +197,8 @@ document.addEventListener("DOMContentLoaded", function () {
     //#endregion
 
     //#region Title and Work Item Type
-    const title = gitlabRow["Title"] || "Untitled";
+    const title =
+      `${gitlabRow["Issue ID"]} ${gitlabRow["Title"]}` || "Untitled";
     azureRow["Title"] = title;
 
     const isBug = title.toLowerCase().includes("bug");
