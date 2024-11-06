@@ -271,8 +271,8 @@ document.addEventListener("DOMContentLoaded", function () {
     //#endregion
 
     //#region Status and Priority
-    const statusMatch = gitlabRow["Labels"]?.match(/status:(\d+)/);
-    azureRow["Tags"] = statusMatch ? statusMatch[1] : "status";
+    const statusMatch = gitlabRow["Labels"]?.match(/status:(\w+)/);
+    azureRow["Tags"] = statusMatch ? statusMatch[1] : "";
 
     const priorityMatch = gitlabRow["Labels"]?.match(/priority:(\d+)/);
     azureRow["Priority"] = priorityMatch ? +priorityMatch[1] + 1 : "";
@@ -303,7 +303,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const description =
       marked
-        .parse(`[#{${azureRow["Issue ID"]}}](${url})\n${descriptionContent}`)
+        .parse(`[#${gitlabRow["Issue ID"]}](${url})\n\r${descriptionContent}`)
         .replace(",", "&#44;") ?? "no descr";
 
     azureRow["Repro Steps"] = isBug ? description : "";
