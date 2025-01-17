@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", function () {
       "user-iteration-path-input"
     ).value;
     const userLabelsInput = document.getElementById(
-      "user-labels-filters-input"
+      "user-ids-filters-input"
     ).value;
     const userTagsInput = document.getElementById("user-tags-input").value;
 
@@ -176,7 +176,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   function filterDefaultFn(gitlabRow, userPriorityInput) {
     return userPriorityInput?.split(",").some((priority) => {
-      return gitlabRow["Labels"]?.includes(priority);
+      return gitlabRow["Issue ID"]?.includes(priority);
     });
   }
 
@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", function () {
     azureRow["Title"] = title;
 
     const isBug = title.toLowerCase().includes("bug");
-    azureRow["Work Item Type"] = isBug ? "Bug" : "Task";
+    azureRow["Work Item Type"] = isBug ? "Bug" : "Product Backlog Item";
     //#endregion
 
     //#region Status and Priority
