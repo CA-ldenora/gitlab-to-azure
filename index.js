@@ -122,13 +122,13 @@ document.addEventListener("DOMContentLoaded", function () {
       if (document.getElementById("custom-mapping").value) {
         mappingDefaultFn = getCustomEntry("custom-mapping");
       }
-      //#region image extraction
-      if (gitlabRow["URL"])
-        gitlabRow["Description"] = await embedImagesInMarkdown(
-          gitlabRow["Description"],
-          gitlabRow["URL"].replace(/\/-\/issues\/\d+/, "")
-        );
-      //#endregion
+      // //#region image extraction
+      // if (gitlabRow["URL"])
+      //   gitlabRow["Description"] = await embedImagesInMarkdown(
+      //     gitlabRow["Description"],
+      //     gitlabRow["URL"].replace(/\/-\/issues\/\d+/, "")
+      //   );
+      // //#endregion
       mappingDefaultFn(
         gitlabRow,
         azureRow,
@@ -269,7 +269,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       previewHtml += "</tr></thead><tbody>";
 
-      previewData.forEach((row) => {
+      previewData.slice(0, 5).forEach((row) => {
         previewHtml += "<tr>";
         Object.keys(row).forEach((key) => {
           let value = row[key];
