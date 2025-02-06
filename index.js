@@ -242,10 +242,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const description =
       marked
         .parse(`[#${gitlabRow["Issue ID"]}](${url})\n\r${descriptionContent}`)
-        .replace(",", "&#44;") ?? "no descr";
+        .replace(/,/g, "&#44;") ?? "no descr";
 
-    azureRow["Repro Steps"] = isBug ? `"${description}"` : "";
-    azureRow["Description"] = !isBug ? `"${description}"` : "";
+    azureRow["Repro Steps"] = isBug ? description : "";
+    azureRow["Description"] = !isBug ? description : "";
     //#endregion
 
     //#region Area and Iteration Paths
