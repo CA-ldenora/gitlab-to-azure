@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "marked",
         ]);
       }
-      retVal = filterDefaultFn(gitlabRow, retVal, userLabelsInput, marked);
+      retVal = userFilterInput == '' || userFilterInput == null || filterDefaultFn(gitlabRow, retVal, userFilterInput, marked);
 
       return retVal;
     };
@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const userIterationPathInput = document.getElementById(
       "user-iteration-path-input"
     ).value;
-    const userLabelsInput = document.getElementById(
+    const userFilterInput = document.getElementById(
       "user-ids-filters-input"
     ).value;
     const userTagsInput = document.getElementById("user-tags-input").value;
@@ -174,10 +174,12 @@ document.addEventListener("DOMContentLoaded", function () {
     ]);
     return filteredAndMapped;
   }
-  function filterDefaultFn(gitlabRow, userPriorityInput) {
-    return userPriorityInput?.split(",").some((priority) => {
-      return gitlabRow["Issue ID"]?.includes(priority);
-    });
+  function filterDefaultFn(gitlabRow, userLabelsInput) {
+    return (
+      userLabelsInput?.split(",").some((ids) => {
+        return gitlabRow["Issue ID"]?.includes(ids);
+      })
+    );
   }
 
   function mappingDefaultFn(
@@ -207,10 +209,12 @@ document.addEventListener("DOMContentLoaded", function () {
     //#endregion
 
     //#region Status and Priority
-    azureRow["Tags"] = gitlabRow["Labels"]
+    azureRow["Tags"] = gitlabRow["Labels"];
 
     const statusMatch = gitlabRow["Labels"]?.match(/status:(\w+)/);
-    azureRow["State"] = statusMatch ? statusMatch[1].charAt(0).toUppercase()+statusMatch[1].slice(1) : "";
+    azureRow["State"] = statusMatch
+      ? statusMatch[1].charAt(0).toUppercase() + statusMatch[1].slice(1)
+      : "";
 
     const priorityMatch = gitlabRow["Labels"]?.match(/priority:(\d+)/);
     azureRow["Priority"] = priorityMatch ? +priorityMatch[1] + 1 : "";
@@ -220,7 +224,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //#endregion
 
-    let descriptionContent = gitlabRow["Description"].replace(/^'|'$/,'') || "";
+    let descriptionContent =
+      gitlabRow["Description"].replace(/^'|'$/, "") || "";
 
     //#region Effort Calculation
     let timeEstimate = Math.floor(
@@ -241,8 +246,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const description =
       marked
-        .parse(`[#${gitlabRow["Issue ID"]}](${url})\n\r${descriptionContent}`)
-        .replace(/,/g, "&#44;") ?? "no descr";
+        .parse(`[#${gitlabRow["Issue ID"]}](${url})\n\r${descriptionContent.replace(/,/g, "&#44;")}`)
+         ?? "no descr";
 
     azureRow["Repro Steps"] = isBug ? `'${description}'` : "";
     azureRow["Description"] = !isBug ? `'${description}'` : "";
