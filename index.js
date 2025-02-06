@@ -113,7 +113,8 @@ document.addEventListener("DOMContentLoaded", function () {
           "marked",
         ]);
       }
-      retVal = userFilterInput == '' || userFilterInput == null || filterDefaultFn(gitlabRow, retVal, userFilterInput, marked);
+      if (userFilterInput != "" && userFilterInput != null)
+        retVal = filterDefaultFn(gitlabRow, retVal, userFilterInput, marked);
 
       return retVal;
     };
@@ -175,11 +176,9 @@ document.addEventListener("DOMContentLoaded", function () {
     return filteredAndMapped;
   }
   function filterDefaultFn(gitlabRow, userLabelsInput) {
-    return (
-      userLabelsInput?.split(",").some((ids) => {
-        return gitlabRow["Issue ID"]?.includes(ids);
-      })
-    );
+    return userLabelsInput?.split(",").some((ids) => {
+      return gitlabRow["Issue ID"]?.includes(ids);
+    });
   }
 
   function mappingDefaultFn(
@@ -245,9 +244,12 @@ document.addEventListener("DOMContentLoaded", function () {
     //#region Description Formatting
 
     const description =
-      marked
-        .parse(`[#${gitlabRow["Issue ID"]}](${url})\n\r${descriptionContent?.replace(/,/g, "&#44;")}`)
-         ?? "no descr";
+      marked.parse(
+        `[#${gitlabRow["Issue ID"]}](${url})\n\r${descriptionContent?.replace(
+          /,/g,
+          "&#44;"
+        )}`
+      ) ?? "no descr";
 
     azureRow["Repro Steps"] = isBug ? `'${description}'` : "";
     azureRow["Description"] = !isBug ? `'${description}'` : "";
