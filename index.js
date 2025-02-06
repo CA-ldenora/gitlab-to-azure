@@ -251,8 +251,8 @@ document.addEventListener("DOMContentLoaded", function () {
         )}`
       ) ?? "no descr";
 
-    azureRow["Repro Steps"] = isBug ? `'${description}'` : "";
-    azureRow["Description"] = !isBug ? `'${description}'` : "";
+    azureRow["Repro Steps"] = isBug ? description : "";
+    azureRow["Description"] = !isBug ? description : "";
     //#endregion
 
     //#region Area and Iteration Paths
