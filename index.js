@@ -341,13 +341,13 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 async function embedImagesInMarkdown(markdownContent, baseUrl) {
-  const imageRegex = /!\[image\]\(\/uploads\/\S+\.png\)/g;
+  const imageRegex = /!\[\S+\]\(\/uploads\/\S+\.\S+\)/g;
 
   const matches = markdownContent.match(imageRegex) || [];
 
   const fetchAndConvert = async (match) => {
     console.log("dowload img");
-    const relativePath = match.match(/\(\/uploads\/\S+\.png\)/)[0].slice(1, -1);
+    const relativePath = match.match(/\(\/uploads\/\S+\.\S+\)/)[0].slice(1, -1);
     const imageUrl = `${baseUrl}${relativePath}`;
 
     try {
