@@ -130,6 +130,13 @@ document.addEventListener("DOMContentLoaded", function () {
           gitlabRow["URL"].replace(/\/-\/issues\/\d+/, "")
         );
       //#endregion
+      //#region link extraction
+      if (gitlabRow["URL"])
+        gitlabRow["Description"] = await embedLinksInMarkdown(
+          gitlabRow["Description"],
+          gitlabRow["URL"].replace(/\/-\/issues\/\d+/, "")
+        );
+      //#endregion
       mappingDefaultFn(
         gitlabRow,
         azureRow,
@@ -341,12 +348,16 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 async function embedImagesInMarkdown(markdownContent, baseUrl) {
-  const imageRegex = /!\[\S+\]\(\/uploads\/\S+\.\S+\)/g;
-
-  const matches = markdownContent.match(imageRegex) || [];
+  const imageRegex = /!\[(\S+)\]\(\/uploads\/\S+\.\S+\)/g;
+  let pureMarkdonwContent = markdownContent.replace(/!\[/g, "\n![");
+  const matches =
+    pureMarkdonwContent.replace(/!\[/g, "\n![").match(imageRegex) || [];
 
   const fetchAndConvert = async (match) => {
-    console.log("dowload img");
+    const altmatchText = /!\[(\S+)\]\(\/uploads\/\S+\.\S+\)/g.exec(match);
+    const altText = (altmatchText && altmatchText[1]) || "image";
+
+    console.log("dowload ", altText);
     const relativePath = match.match(/\(\/uploads\/\S+\.\S+\)/)[0].slice(1, -1);
     const imageUrl = `${baseUrl}${relativePath}`;
 
@@ -369,14 +380,16 @@ async function embedImagesInMarkdown(markdownContent, baseUrl) {
       }
 
       const blob = await response.blob();
-      const base64String = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
+      const reader = new FileReader();
+      const mimeType = blob.type.replace('text/html', 'image/svg+xml') || "image/png"; // Get the MIME type
+      return new Promise((resolve, reject) => {
+        reader.onloadend = () => {
+          const base64Data = reader.result.split(",")[1]; // Extract Base64 data
+          resolve(`![${altText}](data:${mimeType};base64,${base64Data})`);
+        };
         reader.onerror = reject;
         reader.readAsDataURL(blob);
       });
-
-      return `![image](${base64String})`;
     } catch (error) {
       console.error(
         `Errore durante il recupero dell'immagine ${imageUrl}:`,
@@ -389,10 +402,17 @@ async function embedImagesInMarkdown(markdownContent, baseUrl) {
   const replacements = await Promise.all(matches.map(fetchAndConvert));
 
   replacements.forEach((replacement, index) => {
-    markdownContent = markdownContent.replace(matches[index], replacement);
+    pureMarkdonwContent = pureMarkdonwContent.replace(
+      matches[index],
+      replacement
+    );
   });
 
-  return markdownContent;
+  return pureMarkdonwContent;
+}
+
+function embedLinksInMarkdown(markdownContent, baseUrl) {
+  return markdownContent?.replace(/]\(\/uploads\//g, `](${baseUrl}/uploads/`);
 }
 
 function displayErrors(errors) {
