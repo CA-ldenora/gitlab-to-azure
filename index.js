@@ -220,7 +220,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //#endregion
 
-    let descriptionContent = gitlabRow["Description"].replace(/^'|'$/,'') || "";
+    let descriptionContent = gitlabRow["Description"] || "";
 
     //#region Effort Calculation
     let timeEstimate = Math.floor(
