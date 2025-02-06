@@ -122,13 +122,13 @@ document.addEventListener("DOMContentLoaded", function () {
       if (document.getElementById("custom-mapping").value) {
         mappingDefaultFn = getCustomEntry("custom-mapping");
       }
-      // //#region image extraction
-      // if (gitlabRow["URL"])
-      //   gitlabRow["Description"] = await embedImagesInMarkdown(
-      //     gitlabRow["Description"],
-      //     gitlabRow["URL"].replace(/\/-\/issues\/\d+/, "")
-      //   );
-      // //#endregion
+      //#region image extraction
+      if (gitlabRow["URL"])
+        gitlabRow["Description"] = await embedImagesInMarkdown(
+          gitlabRow["Description"],
+          gitlabRow["URL"].replace(/\/-\/issues\/\d+/, "")
+        );
+      //#endregion
       mappingDefaultFn(
         gitlabRow,
         azureRow,
@@ -244,8 +244,8 @@ document.addEventListener("DOMContentLoaded", function () {
         .parse(`[#${gitlabRow["Issue ID"]}](${url})\n\r${descriptionContent}`)
         .replace(/,/g, "&#44;") ?? "no descr";
 
-    azureRow["Repro Steps"] = isBug ? `${description}` : "";
-    azureRow["Description"] = !isBug ? `${description}` : "";
+    azureRow["Repro Steps"] = isBug ? `'${description}'` : "";
+    azureRow["Description"] = !isBug ? `'${description}'` : "";
     //#endregion
 
     //#region Area and Iteration Paths
