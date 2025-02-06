@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
         filterDefaultFn = getCustomEntry("custom-filters", [
           "gitlabRow",
           "retVal",
-          "userPriorityInput",
+          "userLabelsInput",
           "marked",
         ]);
       }
