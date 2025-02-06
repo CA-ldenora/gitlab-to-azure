@@ -220,7 +220,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //#endregion
 
-    let descriptionContent = gitlabRow["Description"] || "";
+    let descriptionContent = gitlabRow["Description"].replace(/^'|'$/,'') || "";
 
     //#region Effort Calculation
     let timeEstimate = Math.floor(
@@ -244,8 +244,8 @@ document.addEventListener("DOMContentLoaded", function () {
         .parse(`[#${gitlabRow["Issue ID"]}](${url})\n\r${descriptionContent}`)
         .replace(",", "&#44;") ?? "no descr";
 
-    azureRow["Repro Steps"] = isBug ? description : "";
-    azureRow["Description"] = !isBug ? description : "";
+    azureRow["Repro Steps"] = isBug ? `"${description}"` : "";
+    azureRow["Description"] = !isBug ? `"${description}"` : "";
     //#endregion
 
     //#region Area and Iteration Paths
