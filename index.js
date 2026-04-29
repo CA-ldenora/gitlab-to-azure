@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   function filterDefaultFn(gitlabRow, userLabelsInput) {
     return userLabelsInput?.split(",").some((ids) => {
-      return gitlabRow["Issue ID"]?.includes(ids);
+      return gitlabRow["IID"]?.includes(ids);
     });
   }
 
@@ -207,7 +207,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //#region Title and Work Item Type
     const title =
-      `${gitlabRow["Issue ID"]} ${gitlabRow["Title"]}` || "Untitled";
+      `${gitlabRow["IID"]} ${gitlabRow["Title"]}` || "Untitled";
     azureRow["Title"] = title;
 
     const isBug = title.toLowerCase().includes("bug");
@@ -252,7 +252,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const description =
       marked.parse(
-        `[#${gitlabRow["Issue ID"]}](${url})\n\r${descriptionContent?.replace(
+        `[#${gitlabRow["IID"]}](${url})\n\r${descriptionContent?.replace(
           /,/g,
           "&#44;"
         )}`
